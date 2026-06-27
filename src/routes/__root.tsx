@@ -111,6 +111,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: SITE_TITLE },
       { name: "twitter:description", content: SITE_DESC },
+      { title: "Muhammad Aaliyan" },
+      { property: "og:title", content: "Muhammad Aaliyan" },
+      { name: "twitter:title", content: "Muhammad Aaliyan" },
+      { name: "description", content: "A digital portfolio showcasing AI/ML expertise with immersive 3D, advanced animations, and a futuristic design." },
+      { property: "og:description", content: "A digital portfolio showcasing AI/ML expertise with immersive 3D, advanced animations, and a futuristic design." },
+      { name: "twitter:description", content: "A digital portfolio showcasing AI/ML expertise with immersive 3D, advanced animations, and a futuristic design." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
