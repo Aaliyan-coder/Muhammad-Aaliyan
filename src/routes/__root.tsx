@@ -1,7 +1,12 @@
+// @ts-expect-error - font-side-effect imports have no declarations
 import "@fontsource-variable/inter";
+// @ts-expect-error - font-side-effect imports have no declarations
 import "@fontsource/space-grotesk/300.css";
+// @ts-expect-error - font-side-effect imports have no declarations
 import "@fontsource/space-grotesk/400.css";
+// @ts-expect-error - font-side-effect imports have no declarations
 import "@fontsource/space-grotesk/500.css";
+// @ts-expect-error - font-side-effect imports have no declarations
 import "@fontsource/space-grotesk/700.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
