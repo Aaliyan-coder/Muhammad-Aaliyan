@@ -96,7 +96,9 @@ export function Contact() {
 
               <a
                 href={profile.resumeUrl}
-                download
+                download="Aaliyan_Arif_Resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="glass mt-6 inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-medium transition-colors hover:border-white/20 hover:bg-white/[0.07]"
               >
                 <Download className="h-4 w-4 text-cyan" />
