@@ -112,7 +112,7 @@ export function KnowledgeGraph() {
       <pointLight position={[5, 5, 5]} color="#7cc7ff" intensity={1.2} />
       <Suspense fallback={null}>
         <Graph />
-        <EffectComposer multisampling={0} disableNormalPass>
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom intensity={1.0} luminanceThreshold={0.2} mipmapBlur />
         </EffectComposer>
       </Suspense>

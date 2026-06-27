@@ -57,7 +57,7 @@ export function BrainOrb() {
       <pointLight position={[4, 4, 4]} color="#b495ff" intensity={1.2} />
       <Suspense fallback={null}>
         <Brain />
-        <EffectComposer multisampling={0} disableNormalPass>
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom intensity={1.4} luminanceThreshold={0.1} mipmapBlur />
         </EffectComposer>
       </Suspense>

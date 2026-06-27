@@ -73,7 +73,7 @@ export function HeroScene({ quality = 1 }: { quality?: number }) {
         </Suspense>
         <CameraRig />
         <AdaptiveDpr pixelated />
-        <EffectComposer multisampling={0} disableNormalPass>
+        <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom
             intensity={1.1}
             luminanceThreshold={0.15}
