@@ -22,7 +22,7 @@ export function Footer() {
             aria-label="GitHub"
             className="glass rounded-full p-2.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Github className="h-4 w-4" />
+            <GithubIcon className="h-4 w-4" />
           </a>
           <a
             href={profile.linkedin}
@@ -31,7 +31,7 @@ export function Footer() {
             aria-label="LinkedIn"
             className="glass rounded-full p-2.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Linkedin className="h-4 w-4" />
+            <LinkedinIcon className="h-4 w-4" />
           </a>
           <a
             href={`mailto:${profile.email}`}
