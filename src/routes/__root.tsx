@@ -20,6 +20,7 @@ import { useLenis } from "../lib/lenis";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
 import { GradientBackdrop, Noise } from "../components/fx/Noise";
+import { Toaster } from "../components/ui/sonner";
 
 const Cursor = lazy(() =>
   import("../components/fx/Cursor").then((m) => ({ default: m.Cursor })),
@@ -131,7 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "Muhammad Aaliyan Arif",
           jobTitle:
             "AI & Machine Learning Engineer, Full Stack Developer",
-          email: "mailto:aaliyanarif@gmail.com",
+          email: "mailto:aaliyanrif@gmail.com",
           url: "https://aaliyan-s-portfolio.vercel.app",
           sameAs: [
             "https://github.com/Aaliyan-coder",
@@ -181,6 +182,7 @@ function RootComponent() {
         <Outlet />
       </main>
       <Footer />
+      <Toaster richColors position="bottom-right" />
     </QueryClientProvider>
   );
 }

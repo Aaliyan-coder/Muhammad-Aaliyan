@@ -1,13 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Check, Download, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Check, Download, Loader2, Mail, MapPin, Phone } from "lucide-react";
 import { Reveal } from "@/components/fx/Reveal";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { MagneticButton } from "@/components/fx/Magnetic";
 import { GithubIcon, LinkedinIcon } from "@/components/fx/BrandIcons";
 import { profile } from "@/lib/data/profile";
+import { toast } from "sonner";
+
+const WEB3FORMS_ACCESS_KEY = "6c3e0b27-d0cb-4716-b094-b116e74a8f88";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Your name, please.").max(80),
@@ -24,8 +27,10 @@ type Errors = Partial<Record<keyof z.infer<typeof schema>, string>>;
 export function Contact() {
   const [errors, setErrors] = useState<Errors>({});
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const parsed = schema.safeParse({
@@ -43,13 +48,42 @@ export function Contact() {
       return;
     }
     setErrors({});
-    const { name, email, message } = parsed.data;
-    const subject = encodeURIComponent(`Portfolio inquiry — ${name}`);
-    const body = encodeURIComponent(
-      `From: ${name} <${email}>\n\n${message}`,
-    );
-    window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`;
-    setSent(true);
+    setSending(true);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          name: parsed.data.name,
+          email: parsed.data.email,
+          message: parsed.data.message,
+          subject: `Portfolio inquiry — ${parsed.data.name}`,
+          from_name: "Portfolio Contact Form",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSent(true);
+        formRef.current?.reset();
+        toast.success("Message sent!", {
+          description: "Thanks for reaching out — I'll get back to you soon.",
+        });
+      } else {
+        toast.error("Failed to send message", {
+          description: "Something went wrong. Please try again or email me directly.",
+        });
+      }
+    } catch {
+      toast.error("Network error", {
+        description: "Couldn't reach the server. Please check your connection and try again.",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -109,6 +143,7 @@ export function Contact() {
 
           <Reveal delay={0.1}>
             <form
+              ref={formRef}
               onSubmit={onSubmit}
               className="glass-strong relative overflow-hidden rounded-3xl p-8"
             >
@@ -152,12 +187,16 @@ export function Contact() {
 
                 <div className="flex items-center justify-between pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Opens your mail client — no data is sent or stored here.
+                    Your message will be delivered directly to my inbox.
                   </p>
-                  <MagneticButton type="submit">
+                  <MagneticButton type="submit" disabled={sending}>
                     {sent ? (
                       <>
                         Sent <Check className="h-4 w-4" />
+                      </>
+                    ) : sending ? (
+                      <>
+                        Sending <Loader2 className="h-4 w-4 animate-spin" />
                       </>
                     ) : (
                       <>

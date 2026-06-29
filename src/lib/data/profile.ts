@@ -10,7 +10,7 @@ export const profile = {
     "Building end-to-end products at the intersection of intelligent systems and clean engineering.",
   summary:
     "Full stack developer who ships end-to-end features independently — from React frontends to Django REST APIs to graph database backends. Combines hands-on product development with ML research exposure as a Teaching Assistant at UMT.",
-  email: "aaliyanarif@gmail.com",
+  email: "aaliyanrif@gmail.com",
   phone: "+92-320-0487690",
   location: "Lahore, Pakistan",
   github: "https://github.com/Aaliyan-coder",
