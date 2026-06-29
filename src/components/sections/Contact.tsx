@@ -51,22 +51,23 @@ export function Contact() {
     setSending(true);
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          name: parsed.data.name,
-          email: parsed.data.email,
-          message: parsed.data.message,
-          subject: `Portfolio inquiry — ${parsed.data.name}`,
-          from_name: "Portfolio Contact Form",
+          service_id: "service_g4e2lhp",
+          template_id: "template_cylz5fi",
+          user_id: "YK_Okufd_p9d8vqsD",
+          template_params: {
+            name: parsed.data.name,
+            email: parsed.data.email,
+            message: parsed.data.message,
+            title: `Portfolio inquiry — ${parsed.data.name}`,
+          },
         }),
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.ok) {
         setSent(true);
         formRef.current?.reset();
         toast.success("Message sent!", {
