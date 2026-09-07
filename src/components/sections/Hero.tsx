@@ -39,7 +39,7 @@ export function Hero() {
       <div className="absolute inset-0">
         {sceneReady && (
           <Suspense fallback={null}>
-            <HeroScene quality={1} />
+            <HeroScene />
           </Suspense>
         )}
         <div

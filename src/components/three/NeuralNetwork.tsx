@@ -1,14 +1,15 @@
 "use client";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
- * Animated neural-network: nodes connected by lines, pulses traveling along edges.
- * Built once on mount; rotates slowly and ripples with sine waves.
+ * Animated neural-network: nodes connected by lines, pulsing slowly.
+ *
+ * Nodes are drawn as a single InstancedMesh (one draw call for the whole
+ * network instead of one per node) and the edge LineSegments object is built
+ * once and disposed on unmount.
  */
-type Edge = { a: number; b: number; phase: number };
-
 export function NeuralNetwork({
   nodeCount = 36,
   radius = 3.2,
@@ -17,8 +18,9 @@ export function NeuralNetwork({
   radius?: number;
 }) {
   const group = useRef<THREE.Group>(null);
+  const instances = useRef<THREE.InstancedMesh>(null);
 
-  const { nodes, edges, lineGeometry, nodeGeometry } = useMemo(() => {
+  const { nodes, lines, lineMat } = useMemo(() => {
     const nodes: THREE.Vector3[] = [];
     for (let i = 0; i < nodeCount; i++) {
       const t = i / nodeCount;
@@ -33,53 +35,55 @@ export function NeuralNetwork({
       );
     }
 
-    // Connect each node to its nearest few neighbours
-    const edges: Edge[] = [];
+    // Connect each node to its three nearest neighbours.
+    const seen = new Set<string>();
+    const positions: number[] = [];
     for (let i = 0; i < nodes.length; i++) {
-      const dists = nodes
+      const nearest = nodes
         .map((n, j) => ({ j, d: nodes[i].distanceTo(n) }))
         .filter((x) => x.j !== i)
         .sort((a, b) => a.d - b.d)
         .slice(0, 3);
-      for (const { j } of dists) {
-        if (!edges.some((e) => (e.a === i && e.b === j) || (e.a === j && e.b === i))) {
-          edges.push({ a: i, b: j, phase: Math.random() * Math.PI * 2 });
-        }
+      for (const { j } of nearest) {
+        const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        positions.push(
+          nodes[i].x, nodes[i].y, nodes[i].z,
+          nodes[j].x, nodes[j].y, nodes[j].z,
+        );
       }
     }
 
-    const positions = new Float32Array(edges.length * 2 * 3);
-    edges.forEach((e, i) => {
-      positions.set([nodes[e.a].x, nodes[e.a].y, nodes[e.a].z], i * 6);
-      positions.set([nodes[e.b].x, nodes[e.b].y, nodes[e.b].z], i * 6 + 3);
+    const lineGeometry = new THREE.BufferGeometry();
+    lineGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(positions), 3),
+    );
+    const lineMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color("#7cc7ff"),
+      transparent: true,
+      opacity: 0.3,
     });
 
-    const lineGeometry = new THREE.BufferGeometry();
-    lineGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-    const nodeGeometry = new THREE.SphereGeometry(0.06, 12, 12);
-
-    return { nodes, edges, lineGeometry, nodeGeometry };
+    return { nodes, lines: new THREE.LineSegments(lineGeometry, lineMat), lineMat };
   }, [nodeCount, radius]);
 
-  const lineMat = useMemo(
-    () =>
-      new THREE.LineBasicMaterial({
-        color: new THREE.Color("#7cc7ff"),
-        transparent: true,
-        opacity: 0.35,
-      }),
-    [],
-  );
+  // Seed the instance matrices once.
+  useEffect(() => {
+    const mesh = instances.current;
+    if (!mesh) return;
+    const m = new THREE.Matrix4();
+    nodes.forEach((n, i) => mesh.setMatrixAt(i, m.setPosition(n)));
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [nodes]);
 
-  const nodeMat = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: new THREE.Color("#b495ff"),
-        transparent: true,
-        opacity: 0.9,
-      }),
-    [],
+  useEffect(
+    () => () => {
+      lines.geometry.dispose();
+      lineMat.dispose();
+    },
+    [lines, lineMat],
   );
 
   useFrame((state, dt) => {
@@ -87,17 +91,16 @@ export function NeuralNetwork({
       group.current.rotation.y += dt * 0.08;
       group.current.rotation.x += dt * 0.02;
     }
-    // pulse opacity on shared line material
-    const t = state.clock.elapsedTime;
-    lineMat.opacity = 0.25 + Math.sin(t * 1.6) * 0.08;
+    lineMat.opacity = 0.25 + Math.sin(state.clock.elapsedTime * 1.6) * 0.08;
   });
 
   return (
     <group ref={group}>
-      <primitive object={new THREE.LineSegments(lineGeometry, lineMat)} />
-      {nodes.map((n, i) => (
-        <mesh key={i} position={n} geometry={nodeGeometry} material={nodeMat} />
-      ))}
+      <primitive object={lines} />
+      <instancedMesh ref={instances} args={[undefined, undefined, nodes.length]}>
+        <sphereGeometry args={[0.06, 8, 8]} />
+        <meshBasicMaterial color="#b495ff" transparent opacity={0.9} />
+      </instancedMesh>
     </group>
   );
 }

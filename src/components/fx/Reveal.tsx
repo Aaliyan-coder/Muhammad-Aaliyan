@@ -2,13 +2,17 @@
 import { type ReactNode } from "react";
 import { motion, type Variants } from "framer-motion";
 
+/**
+ * Transform + opacity only. Animating `filter: blur()` forces the compositor to
+ * re-blur the layer every frame, and with dozens of reveals firing during a
+ * smooth scroll that alone was enough to drop frames.
+ */
 const variants: Variants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 24 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
   },
 };
 

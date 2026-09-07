@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { ArrowUpRight, ExternalLink, Star } from "lucide-react";
 import { GithubIcon } from "@/components/fx/BrandIcons";
@@ -60,20 +60,30 @@ export function ProjectCard({
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
   const [hover, setHover] = useState(false);
+  // The card's box is measured once on enter. Measuring it inside pointermove
+  // forced a synchronous layout on every single mouse event.
+  const rect = useRef<DOMRect | null>(null);
   const overlay = useMotionTemplate`radial-gradient(360px circle at ${mx}% ${my}%, oklch(0.82 0.13 220 / 0.18), transparent 60%)`;
 
   return (
     <motion.article
       onPointerMove={(e) => {
-        const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const r = rect.current;
+        if (!r) return;
         mx.set(((e.clientX - r.left) / r.width) * 100);
         my.set(((e.clientY - r.top) / r.height) * 100);
       }}
-      onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
+      onPointerEnter={(e) => {
+        rect.current = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        setHover(true);
+      }}
+      onPointerLeave={() => {
+        rect.current = null;
+        setHover(false);
+      }}
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 220, damping: 22 }}
-      className="group relative isolate flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl"
+      className="group relative isolate flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md"
     >
       <motion.div
         aria-hidden

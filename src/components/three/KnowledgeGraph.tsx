@@ -1,68 +1,73 @@
 "use client";
-import { Suspense, useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { Billboard, Text } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { aiInterests } from "@/lib/data/profile";
+import { SceneCanvas, useTier } from "./SceneCanvas";
 
-type Node = {
-  position: THREE.Vector3;
-  label: string;
-  base: THREE.Vector3;
-};
-
-function Graph() {
+function Graph({ labels }: { labels: boolean }) {
   const group = useRef<THREE.Group>(null);
+  const instances = useRef<THREE.InstancedMesh>(null);
 
-  const nodes = useMemo<Node[]>(() => {
-    const labels = aiInterests;
-    return labels.map((label, i) => {
-      const t = i / labels.length;
+  const nodes = useMemo(() => {
+    return aiInterests.map((label, i) => {
+      const t = i / aiInterests.length;
       const phi = Math.acos(1 - 2 * t);
       const theta = Math.PI * (1 + Math.sqrt(5)) * i;
       const r = 3.2;
-      const v = new THREE.Vector3(
-        r * Math.sin(phi) * Math.cos(theta),
-        r * Math.sin(phi) * Math.sin(theta) * 0.7,
-        r * Math.cos(phi),
-      );
-      return { position: v.clone(), label, base: v.clone() };
+      return {
+        label,
+        position: new THREE.Vector3(
+          r * Math.sin(phi) * Math.cos(theta),
+          r * Math.sin(phi) * Math.sin(theta) * 0.7,
+          r * Math.cos(phi),
+        ),
+      };
     });
   }, []);
 
-  const edgeGeom = useMemo(() => {
+  // Edges and their material are built once and disposed on unmount, rather
+  // than being reallocated on every render.
+  const { lines, lineMat } = useMemo(() => {
     const positions: number[] = [];
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         if (nodes[i].position.distanceTo(nodes[j].position) < 4) {
           positions.push(
-            nodes[i].position.x,
-            nodes[i].position.y,
-            nodes[i].position.z,
-            nodes[j].position.x,
-            nodes[j].position.y,
-            nodes[j].position.z,
+            nodes[i].position.x, nodes[i].position.y, nodes[i].position.z,
+            nodes[j].position.x, nodes[j].position.y, nodes[j].position.z,
           );
         }
       }
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute(
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute(
       "position",
       new THREE.BufferAttribute(new Float32Array(positions), 3),
     );
-    return g;
+    const lineMat = new THREE.LineBasicMaterial({
+      color: "#7cc7ff",
+      transparent: true,
+      opacity: 0.25,
+    });
+    return { lines: new THREE.LineSegments(geom, lineMat), lineMat };
   }, [nodes]);
 
-  const lineMat = useMemo(
-    () =>
-      new THREE.LineBasicMaterial({
-        color: "#7cc7ff",
-        transparent: true,
-        opacity: 0.25,
-      }),
-    [],
+  useEffect(() => {
+    const mesh = instances.current;
+    if (!mesh) return;
+    const m = new THREE.Matrix4();
+    nodes.forEach((n, i) => mesh.setMatrixAt(i, m.setPosition(n.position)));
+    mesh.instanceMatrix.needsUpdate = true;
+  }, [nodes]);
+
+  useEffect(
+    () => () => {
+      lines.geometry.dispose();
+      lineMat.dispose();
+    },
+    [lines, lineMat],
   );
 
   useFrame(({ clock }) => {
@@ -74,14 +79,14 @@ function Graph() {
 
   return (
     <group ref={group}>
-      <primitive object={new THREE.LineSegments(edgeGeom, lineMat)} />
-      {nodes.map((n, i) => (
-        <group key={i} position={n.position}>
-          <mesh>
-            <sphereGeometry args={[0.12, 16, 16]} />
-            <meshBasicMaterial color="#b495ff" />
-          </mesh>
-          <Billboard>
+      <primitive object={lines} />
+      <instancedMesh ref={instances} args={[undefined, undefined, nodes.length]}>
+        <sphereGeometry args={[0.12, 12, 12]} />
+        <meshBasicMaterial color="#b495ff" />
+      </instancedMesh>
+      {labels &&
+        nodes.map((n) => (
+          <Billboard key={n.label} position={n.position}>
             <Text
               fontSize={0.22}
               color="#e6edf7"
@@ -94,28 +99,26 @@ function Graph() {
               {n.label}
             </Text>
           </Billboard>
-        </group>
-      ))}
+        ))}
     </group>
   );
 }
 
 export function KnowledgeGraph() {
+  const tier = useTier();
+  if (tier === null || tier === "off") return null;
+
   return (
-    <Canvas
+    <SceneCanvas
       camera={{ position: [0, 0, 8], fov: 50 }}
-      dpr={[1, 1.6]}
-      style={{ position: "absolute", inset: 0 }}
-      gl={{ alpha: true, antialias: true }}
+      dpr={[1, tier === "high" ? 1.5 : 1]}
+      gl={{ alpha: true, antialias: tier === "high", stencil: false }}
     >
       <ambientLight intensity={0.8} />
       <pointLight position={[5, 5, 5]} color="#7cc7ff" intensity={1.2} />
       <Suspense fallback={null}>
-        <Graph />
-        <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom intensity={1.0} luminanceThreshold={0.2} mipmapBlur />
-        </EffectComposer>
+        <Graph labels={tier === "high"} />
       </Suspense>
-    </Canvas>
+    </SceneCanvas>
   );
 }
