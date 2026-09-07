@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Check, Download, Loader2, Mail, MapPin, Phone } from "lucide-react";
@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/layout/SectionHeading";
 import { MagneticButton } from "@/components/fx/Magnetic";
 import { GithubIcon, LinkedinIcon } from "@/components/fx/BrandIcons";
 import { profile } from "@/lib/data/profile";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const WEB3FORMS_ACCESS_KEY = "6c3e0b27-d0cb-4716-b094-b116e74a8f88";
@@ -129,16 +130,7 @@ export function Contact() {
                 href={profile.linkedin}
               />
 
-              <a
-                href={profile.resumeUrl}
-                download="Aaliyan_Arif_Resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="glass mt-6 inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-medium transition-colors hover:border-white/20 hover:bg-white/[0.07]"
-              >
-                <Download className="h-4 w-4 text-cyan" />
-                Download résumé
-              </a>
+              <ResumeButton />
             </div>
           </Reveal>
 
@@ -212,6 +204,76 @@ export function Contact() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Résumé download with actual feedback. A browser download is silent, so
+ * without this the button gives no sign it worked. The sweep fills, the arrow
+ * drops away and a tick takes its place, then it resets.
+ *
+ * State is per-click only — no timers run unless someone presses it, and they
+ * are cleared on unmount.
+ */
+function ResumeButton() {
+  const [phase, setPhase] = useState<"idle" | "saving" | "done">("idle");
+  const timers = useRef<number[]>([]);
+
+  useEffect(
+    () => () => {
+      timers.current.forEach(window.clearTimeout);
+    },
+    [],
+  );
+
+  const onClick = () => {
+    if (phase !== "idle") return;
+    // The click still falls through to the browser; this is affordance only.
+    setPhase("saving");
+    timers.current.push(
+      window.setTimeout(() => setPhase("done"), 620),
+      window.setTimeout(() => setPhase("idle"), 2600),
+    );
+  };
+
+  return (
+    <a
+      href={profile.resumeUrl}
+      download="Aaliyan_Arif_Resume.pdf"
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClick}
+      className="glass group relative mt-6 inline-flex min-w-[13rem] items-center justify-center gap-3 overflow-hidden rounded-full px-5 py-3 text-sm font-medium transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+    >
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 bg-gradient-to-r from-cyan/25 to-violet/25 ease-out",
+          phase === "idle" && "w-0 transition-[width] duration-200",
+          phase === "saving" && "w-full transition-[width] duration-[620ms]",
+          phase === "done" && "w-full transition-[width] duration-200",
+        )}
+      />
+      <span className="relative flex h-4 w-4 items-center justify-center">
+        <Download
+          className={cn(
+            "absolute h-4 w-4 text-cyan transition-all duration-300",
+            phase === "idle"
+              ? "translate-y-0 opacity-100 group-hover:translate-y-0.5"
+              : "translate-y-3 opacity-0",
+          )}
+        />
+        <Check
+          className={cn(
+            "absolute h-4 w-4 text-cyan transition-all duration-300",
+            phase === "done" ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0",
+          )}
+        />
+      </span>
+      <span className="relative" aria-live="polite">
+        {phase === "done" ? "Résumé saved" : phase === "saving" ? "Preparing…" : "Download résumé"}
+      </span>
+    </a>
   );
 }
 
