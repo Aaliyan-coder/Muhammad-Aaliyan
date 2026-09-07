@@ -1,5 +1,6 @@
 "use client";
 import { Suspense, lazy } from "react";
+import { Bitmoji } from "@/components/fx/Bitmoji";
 import { Reveal } from "@/components/fx/Reveal";
 import { SectionHeading } from "@/components/layout/SectionHeading";
 import { profile } from "@/lib/data/profile";
@@ -34,9 +35,11 @@ export function About() {
             </Reveal>
             <Reveal delay={0.05}>
               <p className="text-base text-muted-foreground">
-                I gravitate toward problems where systems thinking meets machine learning —
-                graph databases, retrieval-augmented pipelines, computer vision, and the kind
-                of clean React frontends that make complex backends feel effortless to use.
+                Most of my work lives in machine learning — computer vision with YOLOv8 and
+                OpenCV, retrieval-augmented pipelines over graph databases, and the model
+                plumbing that decides whether a system holds up in production. Full stack is
+                what I reach for next: React and Django are how a trained model stops being a
+                notebook and starts being a product.
               </p>
             </Reveal>
 
@@ -64,13 +67,26 @@ export function About() {
           </div>
 
           <Reveal delay={0.1}>
-            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-white/5 bg-[radial-gradient(circle_at_50%_50%,oklch(0.18_0.04_270),oklch(0.08_0.02_260))]">
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/5 bg-[radial-gradient(circle_at_50%_40%,oklch(0.18_0.04_270),oklch(0.08_0.02_260))]">
               <Suspense fallback={null}>
                 <BrainOrb />
               </Suspense>
+
+              {/* Portrait sits in front of the neural orb */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[6%] flex items-end justify-center">
+                <Bitmoji
+                  src={profile.avatar || undefined}
+                  className="h-auto w-[86%] drop-shadow-[0_24px_48px_rgba(0,0,0,0.55)]"
+                />
+              </div>
+
               <div className="pointer-events-none absolute inset-0 rounded-3xl shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]" />
-              <div className="absolute bottom-4 left-4 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                neural · interactive
+              <div className="absolute bottom-4 left-4 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <span
+                  aria-hidden
+                  className="h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_10px_var(--cyan)]"
+                />
+                {profile.name} · online
               </div>
             </div>
           </Reveal>

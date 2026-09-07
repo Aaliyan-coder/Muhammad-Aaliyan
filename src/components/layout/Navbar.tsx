@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { Bitmoji } from "@/components/fx/Bitmoji";
+import { profile } from "@/lib/data/profile";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -36,12 +38,19 @@ export function Navbar() {
       >
         <Link
           to="/"
-          className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold tracking-tight"
+          className="flex items-center gap-2 rounded-full py-1 pl-1 pr-4 text-sm font-semibold tracking-tight"
         >
           <span
             aria-hidden
-            className="h-2 w-2 rounded-full bg-cyan shadow-[0_0_12px_var(--cyan)]"
-          />
+            className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[radial-gradient(circle_at_50%_35%,oklch(0.24_0.05_270),oklch(0.10_0.02_260))]"
+          >
+            <Bitmoji
+              variant="bust"
+              float={false}
+              src={profile.avatar || undefined}
+              className="h-[128%] w-auto"
+            />
+          </span>
           Aaliyan<span className="text-muted-foreground">.dev</span>
         </Link>
         <ul className="hidden items-center md:flex">
