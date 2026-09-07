@@ -5,18 +5,6 @@ export type SkillGroup = {
 
 export const skillGroups: SkillGroup[] = [
   {
-    label: "Languages",
-    items: ["Python", "JavaScript", "TypeScript", "Cypher", "SQL"],
-  },
-  {
-    label: "Frontend",
-    items: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "Three.js"],
-  },
-  {
-    label: "Backend",
-    items: ["Django", "Django REST", "Node.js", "FastAPI", "Flask"],
-  },
-  {
     label: "AI / ML",
     items: [
       "TensorFlow",
@@ -30,6 +18,18 @@ export const skillGroups: SkillGroup[] = [
   {
     label: "Data",
     items: ["Pandas", "NumPy", "Matplotlib", "RAG", "Vector DBs"],
+  },
+  {
+    label: "Languages",
+    items: ["Python", "JavaScript", "TypeScript", "Cypher", "SQL"],
+  },
+  {
+    label: "Frontend",
+    items: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "Three.js"],
+  },
+  {
+    label: "Backend",
+    items: ["Django", "Django REST", "Node.js", "FastAPI", "Flask"],
   },
   {
     label: "Databases & Cloud",

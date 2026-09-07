@@ -26,6 +26,10 @@ const Cursor = lazy(() =>
   import("../components/fx/Cursor").then((m) => ({ default: m.Cursor })),
 );
 
+const ChatBot = lazy(() =>
+  import("../components/fx/ChatBot").then((m) => ({ default: m.ChatBot })),
+);
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -86,7 +90,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 const SITE_TITLE =
   "Aaliyan Arif — AI & Machine Learning Engineer · Full Stack Developer";
 const SITE_DESC =
-  "Portfolio of Aaliyan Arif — AI & ML engineer and full stack developer building intelligent systems with React, Django, Neo4j, TensorFlow and YOLOv8.";
+  "Portfolio of Aaliyan Arif — AI & ML engineer and full stack developer building intelligent systems with TensorFlow, PyTorch, YOLOv8, LangChain and Neo4j, shipped on React and Django.";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -182,7 +186,9 @@ function RootComponent() {
         <Outlet />
       </main>
       <Footer />
-      <Toaster richColors position="bottom-right" />
+      <ChatBot />
+      {/* Toasts move off bottom-right so the chat launcher doesn't cover them */}
+      <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
 }
